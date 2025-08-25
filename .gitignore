@@ -208,3 +208,14 @@ __marimo__/
 
 # LangGraph
 .langgraph_api
+
+# Archivos de deployment con información sensible
+DEPLOYMENT.md
+deployment.md
+deploy.md
+config.json
+secrets.json
+credentials.json
+
+# Streamlit secrets
+.streamlit/secrets.toml
