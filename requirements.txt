@@ -1,0 +1,20 @@
+# Core Streamlit app dependencies
+streamlit>=1.28.0
+python-dotenv>=1.0.0
+
+# Tavily for web search
+tavily-python>=0.3.0
+
+# LangChain ecosystem (required by deepagents)
+langchain>=0.2.14
+langgraph>=0.2.6
+langchain-core>=0.2.0
+
+# Model providers
+langchain-openai>=0.1.0  # For OpenRouter (OpenAI-compatible)
+langchain-google-genai>=1.0.0  # For Google Gemini
+langchain-anthropic>=0.1.23  # Required by deepagents default model
+
+# Additional dependencies that might be needed
+pydantic>=2.0.0
+httpx>=0.24.0

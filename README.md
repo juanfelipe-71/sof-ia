@@ -1,300 +1,199 @@
-# 🧠🤖Deep Agents
+# 🧠🤖 SOF-IA - Deep Agents con Gemini
 
-Using an LLM to call tools in a loop is the simplest form of an agent. 
-This architecture, however, can yield agents that are “shallow” and fail to plan and act over longer, more complex tasks. 
-Applications like “Deep Research”, "Manus", and “Claude Code” have gotten around this limitation by implementing a combination of four things:
-a **planning tool**, **sub agents**, access to a **file system**, and a **detailed prompt**.
+**SOF-IA** es un agente de IA inteligente que utiliza Gemini 2.0 Flash para generar informes detallados y estructurados basados en búsquedas de internet en tiempo real. El sistema está optimizado para producir análisis profundos y documentos extensos sobre cualquier tema solicitado.
 
-<img src="deep_agents.png" alt="deep agent" width="600"/>
+## ✨ Características
 
-`deepagents` is a Python package that implements these in a general purpose way so that you can easily create a Deep Agent for your application.
+- 🤖 **Agente IA Avanzado**: Powered by Gemini 2.0 Flash
+- 🌐 **Búsqueda en Internet**: Integración con Tavily para información actualizada
+- 📊 **Informes Estructurados**: Genera documentos de 900-1200 palabras mínimo
+- 🎯 **Análisis Profundo**: Estructura narrativa con secciones temáticas
+- 🔒 **Entorno Aislado**: Scripts automáticos para instalación segura
+- 💻 **Multiplataforma**: Compatible con Windows 11 y Linux Ubuntu
 
-**Acknowledgements: This project was primarily inspired by Claude Code, and initially was largely an attempt to see what made Claude Code general purpose, and make it even more so.**
+## 🚀 Inicio Rápido
 
-## Installation
+### Requisitos Previos
+
+- **Python 3.8+** instalado en tu sistema
+- **API Keys** necesarias:
+  - `GEMINI_API_KEY` o `GOOGLE_API_KEY` (Google AI Studio)
+  - `TAVILY_API_KEY` (Tavily Search)
+
+### 📥 Instalación Automática
+
+#### Windows 11
+```cmd
+# Clona el repositorio
+git clone https://github.com/Cesde-Suroeste/Sof-ia.git
+cd Sof-ia
+
+# Ejecuta el script automático
+run_windows.bat
+```
+
+#### Linux Ubuntu
+```bash
+# Clona el repositorio
+git clone https://github.com/Cesde-Suroeste/Sof-ia.git
+cd Sof-ia
+
+# Ejecuta el script automático
+./run_linux.sh
+```
+
+### 🔑 Configuración de API Keys
+
+#### Opción 1: Variables de Entorno
+
+**Windows:**
+```cmd
+set GEMINI_API_KEY=tu_api_key_de_gemini_aqui
+set TAVILY_API_KEY=tu_api_key_de_tavily_aqui
+```
+
+**Linux:**
+```bash
+export GEMINI_API_KEY=tu_api_key_de_gemini_aqui
+export TAVILY_API_KEY=tu_api_key_de_tavily_aqui
+```
+
+#### Opción 2: Archivo .env
+
+Crea un archivo `.env` en la raíz del proyecto:
+```env
+GEMINI_API_KEY=tu_api_key_de_gemini_aqui
+TAVILY_API_KEY=tu_api_key_de_tavily_aqui
+```
+
+### 🔗 Obtener API Keys
+
+1. **Gemini API Key**:
+   - Visita [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Crea una nueva API key
+   - Copia la clave generada
+
+2. **Tavily API Key**:
+   - Regístrate en [Tavily](https://tavily.com/)
+   - Obtén tu API key gratuita
+   - Copia la clave desde tu dashboard
+
+## 📖 Uso
+
+1. **Ejecuta la aplicación** usando los scripts automáticos
+2. **Abre tu navegador** en `http://localhost:8501`
+3. **Configura el modelo** (opcional) en la barra lateral
+4. **Escribe tu consulta** sobre el tema que quieres investigar
+5. **Haz clic en "📊 Generar informe"**
+6. **Espera el análisis** completo y detallado
+
+### 💡 Ejemplos de Consultas
+
+- "Investiga los últimos avances en modelos LLM open-source en 2025"
+- "Analiza el estado actual de la IA generativa y sus aplicaciones empresariales"
+- "Examina las tendencias emergentes en automatización con IA"
+- "Estudia el impacto de los agentes de IA en diferentes industrias"
+
+## 🛠️ Instalación Manual
+
+Si prefieres instalar manualmente:
 
 ```bash
-pip install deepagents
+# 1. Clona el repositorio
+git clone https://github.com/Cesde-Suroeste/Sof-ia.git
+cd Sof-ia
+
+# 2. Crea entorno virtual
+python -m venv venv
+
+# 3. Activa el entorno virtual
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# 4. Instala dependencias
+pip install -r requirements.txt
+
+# 5. Configura variables de entorno (ver sección anterior)
+
+# 6. Ejecuta la aplicación
+streamlit run streamlit_app.py --server.port 8501
 ```
 
-## Usage
+## 📁 Estructura del Proyecto
 
-(To run the example below, will need to `pip install tavily-python`)
-
-```python
-import os
-from typing import Literal
-
-from tavily import TavilyClient
-from deepagents import create_deep_agent
-
-tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
-
-# Search tool to use to do research
-def internet_search(
-    query: str,
-    max_results: int = 5,
-    topic: Literal["general", "news", "finance"] = "general",
-    include_raw_content: bool = False,
-):
-    """Run a web search"""
-    return tavily_client.search(
-        query,
-        max_results=max_results,
-        include_raw_content=include_raw_content,
-        topic=topic,
-    )
-
-
-# Prompt prefix to steer the agent to be an expert researcher
-research_instructions = """You are an expert researcher. Your job is to conduct thorough research, and then write a polished report.
-
-You have access to a few tools.
-
-## `internet_search`
-
-Use this to run an internet search for a given query. You can specify the number of results, the topic, and whether raw content should be included.
-"""
-
-# Create the agent
-agent = create_deep_agent(
-    [internet_search],
-    research_instructions,
-)
-
-# Invoke the agent
-result = agent.invoke({"messages": [{"role": "user", "content": "what is langgraph?"}]})
+```
+Sof-ia/
+├── src/
+│   └── deepagents/          # Librería principal del agente
+├── streamlit_app.py         # Aplicación web principal
+├── requirements.txt         # Dependencias Python
+├── run_windows.bat         # Script automático Windows
+├── run_linux.sh           # Script automático Linux
+├── .env.example           # Ejemplo de configuración
+└── README.md             # Este archivo
 ```
 
-See [examples/research/research_agent.py](examples/research/research_agent.py) for a more complex example.
+## 🔧 Configuración Avanzada
 
-The agent created with `create_deep_agent` is just a LangGraph graph - so you can interact with it (streaming, human-in-the-loop, memory, studio)
-in the same way you would any LangGraph agent.
+### Personalizar el Prompt del Sistema
 
-## Creating a custom deep agent
+Puedes modificar las instrucciones del agente en la barra lateral para:
+- Cambiar el estilo de escritura
+- Ajustar la longitud de los informes
+- Especificar formatos particulares
+- Enfocar en industrias específicas
 
-There are three parameters you can pass to `create_deep_agent` to create your own custom deep agent.
+### Cambiar el Modelo de Gemini
 
-### `tools` (Required)
+En la configuración lateral, puedes especificar diferentes modelos:
+- `gemini-2.0-flash-exp` (por defecto)
+- `gemini-1.5-pro`
+- `gemini-1.5-flash`
 
-The first argument to `create_deep_agent` is `tools`.
-This should be a list of functions or LangChain `@tool` objects.
-The agent (and any subagents) will have access to these tools.
+## 🐛 Solución de Problemas
 
-### `instructions` (Required)
+### Error: "Python no está instalado"
+- Instala Python 3.8+ desde [python.org](https://python.org)
+- Asegúrate de que esté en el PATH del sistema
 
-The second argument to `create_deep_agent` is `instructions`.
-This will serve as part of the prompt of the deep agent.
-Note that there is a [built in system prompt](src/deepagents/prompts.py) as well, so this is not the *entire* prompt the agent will see.
+### Error: "No se encontró API key"
+- Verifica que las variables de entorno estén configuradas
+- Revisa que el archivo `.env` esté en la raíz del proyecto
+- Confirma que las API keys sean válidas
 
-### `subagents` (Optional)
+### Error: "Puerto 8501 en uso"
+- Cierra otras instancias de Streamlit
+- O cambia el puerto: `streamlit run streamlit_app.py --server.port 8502`
 
-A keyword-only argument to `create_deep_agent` is `subagents`.
-This can be used to specify any custom subagents this deep agent will have access to.
-You can read more about why you would want to use subagents [here](#sub-agents)
+### La aplicación no encuentra dependencias
+- Asegúrate de que el entorno virtual esté activado
+- Reinstala dependencias: `pip install -r requirements.txt`
 
-`subagents` should be a list of dictionaries, where each dictionary follow this schema:
+## 🤝 Contribuir
 
-```python
-class SubAgent(TypedDict):
-    name: str
-    description: str
-    prompt: str
-    tools: NotRequired[list[str]]
-    model_settings: NotRequired[dict[str, Any]]
-```
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-- **name**: This is the name of the subagent, and how the main agent will call the subagent
-- **description**: This is the description of the subagent that is shown to the main agent
-- **prompt**: This is the prompt used for the subagent
-- **tools**: This is the list of tools that the subagent has access to. By default will have access to all tools passed in, as well as all built-in tools.
-- **model_settings**: Optional dictionary for per-subagent model configuration (inherits the main model when omitted).
+## 📄 Licencia
 
-To use it looks like:
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
-```python
-research_sub_agent = {
-    "name": "research-agent",
-    "description": "Used to research more in depth questions",
-    "prompt": sub_research_prompt,
-}
-subagents = [research_subagent]
-agent = create_deep_agent(
-    tools,
-    prompt,
-    subagents=subagents
-)
-```
+## 👥 Autores
 
-### `model` (Optional)
+- **CESDE Suroeste** - *Desarrollo inicial* - [Cesde-Suroeste](https://github.com/Cesde-Suroeste)
 
-By default, `deepagents` uses `"claude-sonnet-4-20250514"`. You can customize this by passing any [LangChain model object](https://python.langchain.com/docs/integrations/chat/).
+## 🙏 Agradecimientos
 
-#### Example: Using a Custom Model
+- [Google Gemini](https://ai.google.dev/) por el modelo de IA
+- [Tavily](https://tavily.com/) por la API de búsqueda
+- [Streamlit](https://streamlit.io/) por el framework web
+- [LangChain](https://langchain.com/) por las herramientas de IA
 
-Here's how to use a custom model (like OpenAI's `gpt-oss` model via Ollama):
+---
 
-(Requires `pip install langchain` and then `pip install langchain-ollama` for Ollama models)
-
-```python
-from deepagents import create_deep_agent
-
-# ... existing agent definitions ...
-
-model = init_chat_model(
-    model="ollama:gpt-oss:20b",  
-)
-agent = create_deep_agent(
-    tools=tools,
-    instructions=instructions,
-    model=model,
-    ...
-)
-```
-
-#### Example: Per-subagent model override (optional)
-
-Use a fast, deterministic model for a critique sub-agent, while keeping a different default model for the main agent and others:
-
-```python
-from deepagents import create_deep_agent
-
-critique_sub_agent = {
-    "name": "critique-agent",
-    "description": "Critique the final report",
-    "prompt": "You are a tough editor.",
-    "model_settings": {
-        "model": "anthropic:claude-3-5-haiku-20241022",
-        "temperature": 0,
-        "max_tokens": 8192
-    }
-}
-
-agent = create_deep_agent(
-    tools=[internet_search],
-    instructions="You are an expert researcher...",
-    model="claude-sonnet-4-20250514",  # default for main agent and other sub-agents
-    subagents=[critique_sub_agent],
-)
-```
-
-## Deep Agent Details
-
-The below components are built into `deepagents` and helps make it work for deep tasks off-the-shelf.
-
-### System Prompt
-
-`deepagents` comes with a [built-in system prompt](src/deepagents/prompts.py). This is relatively detailed prompt that is heavily based on and inspired by [attempts](https://github.com/kn1026/cc/blob/main/claudecode.md) to [replicate](https://github.com/asgeirtj/system_prompts_leaks/blob/main/Anthropic/claude-code.md)
-Claude Code's system prompt. It was made more general purpose than Claude Code's system prompt.
-This contains detailed instructions for how to use the built-in planning tool, file system tools, and sub agents.
-Note that part of this system prompt [can be customized](#instructions-required)
-
-Without this default system prompt - the agent would not be nearly as successful at going as it is.
-The importance of prompting for creating a "deep" agent cannot be understated.
-
-### Planning Tool
-
-`deepagents` comes with a built-in planning tool. This planning tool is very simple and is based on ClaudeCode's TodoWrite tool.
-This tool doesn't actually do anything - it is just a way for the agent to come up with a plan, and then have that in the context to help keep it on track.
-
-### File System Tools
-
-`deepagents` comes with four built-in file system tools: `ls`, `edit_file`, `read_file`, `write_file`.
-These do not actually use a file system - rather, they mock out a file system using LangGraph's State object.
-This means you can easily run many of these agents on the same machine without worrying that they will edit the same underlying files.
-
-Right now the "file system" will only be one level deep (no sub directories).
-
-These files can be passed in (and also retrieved) by using the `files` key in the LangGraph State object.
-
-```python
-agent = create_deep_agent(...)
-
-result = agent.invoke({
-    "messages": ...,
-    # Pass in files to the agent using this key
-    # "files": {"foo.txt": "foo", ...}
-})
-
-# Access any files afterwards like this
-result["files"]
-```
-
-### Sub Agents
-
-`deepagents` comes with the built-in ability to call sub agents (based on Claude Code).
-It has access to a `general-purpose` subagent at all times - this is a subagent with the same instructions as the main agent and all the tools that is has access to.
-You can also specify [custom sub agents](#subagents-optional) with their own instructions and tools.
-
-Sub agents are useful for ["context quarantine"](https://www.dbreunig.com/2025/06/26/how-to-fix-your-context.html#context-quarantine) (to help not pollute the overall context of the main agent)
-as well as custom instructions.
-
-### Tool Interrupts
-
-`deepagents` supports human-in-the-loop approval for tool execution. You can configure specific tools to require human approval before execution using the `interrupt_config` parameter. You can also customize the message prefix shown to users for each tool when approval is required.
-
-The interrupt configuration uses four boolean parameters:
-- `allow_ignore`: Whether the user can skip the tool call
-- `allow_respond`: Whether the user can add a text response
-- `allow_edit`: Whether the user can edit the tool arguments
-- `allow_accept`: Whether the user can accept the tool call
-
-Example usage:
-
-```python
-from deepagents import create_deep_agent
-from langgraph.prebuilt.interrupt import HumanInterruptConfig
-
-# Create agent with file operations requiring approval
-agent = create_deep_agent(
-    tools=[your_tools],
-    instructions="Your instructions here",
-    interrupt_config={
-        "write_file": HumanInterruptConfig(
-            allow_ignore=False,
-            allow_respond=False,
-            allow_edit=False,
-            allow_accept=True,
-        ),
-    }
-)
-```
-
-When a tool call requires approval, the agent will pause and wait for human input before proceeding. The message shown to users will include your custom prefix (or "Tool execution requires approval" by default) followed by the tool name and arguments. Multiple tool calls are processed in parallel, allowing you to review and approve multiple operations at once.
-
-## MCP
-
-The `deepagents` library can be ran with MCP tools. This can be achieved by using the [Langchain MCP Adapter library](https://github.com/langchain-ai/langchain-mcp-adapters).
-
-(To run the example below, will need to `pip install langchain-mcp-adapters`)
-
-```python
-import asyncio
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from deepagents import create_deep_agent
-
-async def main():
-    # Collect MCP tools
-    mcp_client = MultiServerMCPClient(...)
-    mcp_tools = await mcp_client.get_tools()
-
-    # Create agent
-    agent = create_deep_agent(tools=mcp_tools, ....)
-
-    # Stream the agent
-    async for chunk in agent.astream(
-        {"messages": [{"role": "user", "content": "what is langgraph?"}]},
-        stream_mode="values"
-    ):
-        if "messages" in chunk:
-            chunk["messages"][-1].pretty_print()
-
-asyncio.run(main())
-```
-
-## Roadmap
-- [ ] Allow users to customize full system prompt
-- [ ] Code cleanliness (type hinting, docstrings, formating)
-- [ ] Allow for more of a robust virtual filesystem
-- [ ] Create an example of a deep coding agent built on top of this
-- [ ] Benchmark the example of [deep research agent](examples/research/research_agent.py)
+**¿Necesitas ayuda?** Abre un [issue](https://github.com/Cesde-Suroeste/Sof-ia/issues) en GitHub.
