@@ -1,0 +1,7 @@
+# System dependencies for Streamlit Cloud
+# Uncomment if you need system packages
+# build-essential
+# python3-dev
+# libpq-dev
+# libssl-dev
+# libffi-dev
